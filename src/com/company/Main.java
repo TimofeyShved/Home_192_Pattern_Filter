@@ -17,14 +17,22 @@ public class Main {
         cars.add(carF3);
 
         // запускаем фильтр
-        cars = new SpeedFilter().filter(cars, 180);
-        for (CarF c: cars){
+        List<CarF> carsOld = new SpeedFilter().filter(cars, 180);
+        for (CarF c: carsOld){
             System.out.println(c.getSpeed());
         }
 
-        cars = new DoorsFilter().filter(cars, 4);
-        for (CarF c: cars){
-            System.out.println(c.getDoors());
+        carsOld = new DoorsFilter().filter(carsOld, 4);
+        for (CarF c: carsOld){
+            System.out.println(c.getColor());
+        }
+
+        System.out.println("---------------------------------------------------------");
+
+        AndFilter andFilter = new AndFilter(new SpeedFilter(), new DoorsFilter());
+        List<CarF> carsAnd = andFilter.filter(cars, 180, 2);
+        for (CarF c: carsOld){
+            System.out.println(c.getColor());
         }
     }
 }
@@ -56,18 +64,18 @@ class CarF{
 
 // --------------------------------------------------------- создаём фильтры
 interface CarFilter<T> {
-    List<CarF> filter(List<CarF> cars, T t);
+    List<CarF> filter(List<CarF> cars, T ... t);
 }
 
 // фильтр скорости
 class SpeedFilter implements CarFilter{
     @Override
-    public List<CarF> filter(List cars, Object speed) {
+    public List<CarF> filter(List cars, Object ... speed) {
         List<CarF> oldList = cars;
         List<CarF> newList = new ArrayList<>();
 
         for (CarF car:oldList){
-            if (car.getSpeed() >= (int)speed){
+            if (car.getSpeed() >= (int)speed[0]){
                 newList.add(car);
             }
         }
@@ -79,12 +87,12 @@ class SpeedFilter implements CarFilter{
 // фильтр дверей
 class DoorsFilter implements CarFilter{
     @Override
-    public List<CarF> filter(List cars, Object doors) {
+    public List<CarF> filter(List cars, Object ... doors) {
         List<CarF> oldList = cars;
         List<CarF> newList = new ArrayList<>();
 
         for (CarF car:oldList){
-            if (car.getDoors() >= (int)doors){
+            if (car.getDoors() >= (int)doors[0]){
                 newList.add(car);
             }
         }
@@ -92,3 +100,22 @@ class DoorsFilter implements CarFilter{
         return newList;
     }
 }
+
+// совмещение нескольких фильтров
+class AndFilter implements CarFilter{
+    CarFilter filter1;
+    CarFilter filter2;
+
+    public AndFilter(CarFilter filter1, CarFilter filter2) {
+        this.filter1 = filter1;
+        this.filter2 = filter2;
+    }
+
+    @Override
+    public List<CarF> filter(List cars, Object ... o) {
+        List<CarF> oldList = cars;
+        List<CarF> newList = filter1.filter(cars, o[0]);
+        return filter2.filter(newList, o[1]);
+    }
+}
+
