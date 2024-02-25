@@ -27,11 +27,19 @@ public class Main {
             System.out.println(c.getColor());
         }
 
-        System.out.println("---------------------------------------------------------");
+        System.out.println("----------------------------- AND ----------------------------");
 
         AndFilter andFilter = new AndFilter(new SpeedFilter(), new DoorsFilter());
-        List<CarF> carsAnd = andFilter.filter(cars, 180, 2);
-        for (CarF c: carsOld){
+        List<CarF> carsAnd = andFilter.filter(cars, 180, 4);
+        for (CarF c: carsAnd){
+            System.out.println(c.getColor());
+        }
+
+        System.out.println("---------------- OR -----------------------------------------");
+
+        OrFilter orFilter = new OrFilter(new SpeedFilter(), new DoorsFilter());
+        List<CarF> carsOr = orFilter.filter(cars, 180, 4);
+        for (CarF c: carsOr){
             System.out.println(c.getColor());
         }
     }
@@ -119,3 +127,27 @@ class AndFilter implements CarFilter{
     }
 }
 
+class OrFilter implements CarFilter{
+    CarFilter filter1;
+    CarFilter filter2;
+
+    public OrFilter(CarFilter filter1, CarFilter filter2) {
+        this.filter1 = filter1;
+        this.filter2 = filter2;
+    }
+
+    @Override
+    public List<CarF> filter(List cars, Object ... o) {
+        List<CarF> oldList = cars;
+        List<CarF> newList1 = filter1.filter(cars, o[0]);
+        List<CarF> newList2 = filter2.filter(cars, o[0]);
+
+        for (CarF c: newList1){
+            if (!newList2.contains(c)){
+                newList2.add(c);
+            }
+        }
+
+        return newList2;
+    }
+}
